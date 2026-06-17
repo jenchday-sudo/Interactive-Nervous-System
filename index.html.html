@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Divisions of the Nervous System — Interactive Diagram</title>
+<style>
+  :root {
+    --bg: #f3efe4;
+    --text-dark: #2c2622;
+    --text-muted: #6b6258;
+    --panel-bg: #ffffff;
+    --panel-border: #d8d2c4;
+    --orange: #e8821c;
+    --orange-dark: #ffffff;
+    --amber: #eda83a;
+    --amber-dark: #ffffff;
+    --red1: #d8504a;
+    --red1-dark: #ffffff;
+    --red2: #e88a96;
+    --red2-dark: #ffffff;
+    --red3: #9c2b39;
+    --red3-dark: #ffffff;
+    --red4: #d9536a;
+    --red4-dark: #ffffff;
+    --red5: #b5283f;
+    --red5-dark: #ffffff;
+    --line-color: #4a2530;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    margin: 0;
+    padding: 32px 16px 64px;
+  }
+
+  .page-title {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+
+  .page-subtitle {
+    text-align: center;
+    font-size: 15px;
+    color: var(--text-muted);
+    margin: 0 0 32px;
+  }
+
+  .diagram-container {
+    position: relative;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  svg.connectors {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .tier {
+    position: relative;
+    display: flex;
+    z-index: 1;
+    margin-bottom: 56px;
+  }
+
+  .tier-0 { justify-content: center; margin-right: 100px;}
+  .tier-1 { justify-content: center; gap: 50px; margin-right: 100px;}
+  .tier-2 { justify-content: center; gap: 32px; padding-left: 0; margin-left: 150px;}
+  .tier-3 { justify-content: center; gap: 32px; margin-left: 350px;}
+
+  .node {
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 16px 22px;
+    text-align: center;
+    font-family: inherit;
+    color: #fff;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    min-width: 180px;
+  }
+
+  .node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+  }
+
+  .node:focus-visible {
+    outline: 3px solid #2b6cb0;
+    outline-offset: 2px;
+  }
+
+  .node.active {
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.2);
+  }
+
+  .node-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+
+  .node-sub {
+    font-size: 12.5px;
+    font-weight: 400;
+    opacity: 0.92;
+    margin: 0;
+  }
+
+  .n-nervous { background: var(--orange); }
+  .n-cns { background: var(--amber); }
+  .n-pns { background: var(--red1); }
+  .n-somatic { background: var(--red2); }
+  .n-autonomic { background: var(--red3); }
+  .n-sympathetic { background: var(--red4); }
+  .n-parasympathetic { background: var(--red5); }
+
+  #info-panel {
+    max-width: 760px;
+    margin: 8px auto 0;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    display: none;
+  }
+
+  #info-panel.visible {
+    display: block;
+    animation: fadeIn 0.25s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .info-tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+
+  #info-title {
+    margin: 0 0 14px;
+    font-size: 22px;
+    font-weight: 600;
+  }
+
+  #info-panel h4 {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    margin: 20px 0 8px;
+  }
+
+  #info-panel h4:first-of-type {
+    margin-top: 0;
+  }
+
+  #info-desc, #info-panel li, #info-panel p {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--text-dark);
+  }
+
+  #info-functions {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  #info-functions li {
+    margin-bottom: 6px;
+  }
+
+  #info-fact {
+    background: var(--bg);
+    border-left: 4px solid var(--orange);
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin: 0;
+    font-size: 14.5px;
+  }
+
+  #info-examples {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  #info-examples li {
+    margin-bottom: 6px;
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+
+  .close-btn:hover {
+    color: var(--text-dark);
+  }
+
+  .panel-wrap {
+    position: relative;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+  }
+
+  @media (max-width: 720px) {
+    .tier-1, .tier-2, .tier-3 { flex-wrap: wrap; gap: 16px; }
+    .node { min-width: 140px; padding: 12px 14px; }
+    .node-title { font-size: 14px; }
+    .node-sub { font-size: 11.5px; }
+    #info-panel { padding: 20px 18px; }
+    svg.connectors { display: none; }
+    .tier { margin-bottom: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Divisions of the nervous system</h1>
+<p class="page-subtitle">Click any box below to learn more about that part of the nervous system</p>
+
+<div class="diagram-container" id="diagram-container">
+  <svg class="connectors" id="connector-svg" aria-hidden="true"></svg>
+
+  <div class="tier tier-0">
+    <button class="node n-nervous" data-key="nervous" id="node-nervous">
+      <p class="node-title">Nervous system</p>
+    </button>
+  </div>
+
+  <div class="tier tier-1">
+    <button class="node n-cns" data-key="cns" id="node-cns">
+      <p class="node-title">Central Nervous System</p>
+      <p class="node-sub">(brain and spinal cord)</p>
+    </button>
+    <button class="node n-pns" data-key="pns" id="node-pns">
+      <p class="node-title">Peripheral Nervous System</p>
+      <p class="node-sub">(neural tissue outside brain and spinal cord)</p>
+    </button>
+  </div>
+
+  <div class="tier tier-2">
+    <button class="node n-somatic" data-key="somatic" id="node-somatic">
+      <p class="node-title">Somatic Nervous System</p>
+      <p class="node-sub">(sensory and motor nerves)</p>
+    </button>
+    <button class="node n-autonomic" data-key="autonomic" id="node-autonomic">
+      <p class="node-title">Autonomic Nervous System</p>
+      <p class="node-sub">(internal systems)</p>
+    </button>
+  </div>
+
+  <div class="tier tier-3">
+    <button class="node n-sympathetic" data-key="sympathetic" id="node-sympathetic">
+      <p class="node-title">Sympathetic Division</p>
+      <p class="node-sub">('fight or flight')</p>
+    </button>
+    <button class="node n-parasympathetic" data-key="parasympathetic" id="node-parasympathetic">
+      <p class="node-title">Parasympathetic Division</p>
+      <p class="node-sub">('rest and digest')</p>
+    </button>
+  </div>
+
+  <div class="panel-wrap">
+    <div id="info-panel" role="region" aria-live="polite">
+      <button class="close-btn" id="close-panel" aria-label="Close panel">&times;</button>
+      <span class="info-tag" id="info-tag"></span>
+      <h2 id="info-title"></h2>
+
+      <p id="info-desc"></p>
+
+      <h4>Key functions</h4>
+      <ul id="info-functions"></ul>
+
+      <h4>Examples in everyday life</h4>
+      <ul id="info-examples"></ul>
+
+      <h4>Did you know?</h4>
+      <p id="info-fact"></p>
+    </div>
+  </div>
+
+  <p class="hint" id="hint-text">Select a box above to see detailed information</p>
+</div>
+
+<script>
+const data = {
+  nervous: {
+    tag: "Overview",
+    color: "#e8821c",
+    title: "Nervous system",
+    desc: "The nervous system is the body's main control and communication network. It collects information from inside and outside the body, processes that information, and coordinates a response. It works closely with the endocrine (hormone) system to keep the body functioning and to maintain a stable internal environment, a process called homeostasis.",
+    functions: [
+      "Detects changes (stimuli) in the environment and inside the body",
+      "Processes and interprets sensory information",
+      "Coordinates voluntary and involuntary responses",
+      "Stores information as memories and supports learning",
+      "Regulates other body systems, often alongside hormones"
+    ],
+    examples: [
+      "Pulling your hand away from something hot",
+      "Recognising a friend's face in a crowd",
+      "Keeping your heart beating without thinking about it",
+      "Learning a new language or skill"
+    ],
+    fact: "The nervous system is built from two broad cell types: neurons, which transmit electrical and chemical signals, and glial cells, which support, insulate, and protect neurons. There are roughly as many glial cells as neurons in the brain."
+  },
+  cns: {
+    tag: "Major division",
+    color: "#eda83a",
+    title: "Central Nervous System (CNS)",
+    desc: "The CNS consists of the brain and spinal cord. It is the body's processing and command centre: it receives sensory information arriving from the peripheral nervous system, interprets it, and generates outgoing instructions. The CNS is protected by bone (the skull and vertebrae), membranes called meninges, and cerebrospinal fluid.",
+    functions: [
+      "Processes and interprets all incoming sensory information",
+      "Generates thought, emotion, memory, and decision-making (brain)",
+      "Relays signals between the brain and the rest of the body (spinal cord)",
+      "Coordinates reflexes, some of which bypass the brain entirely"
+    ],
+    examples: [
+      "Solving a maths problem (brain processing)",
+      "Feeling pain and consciously deciding how to react",
+      "A knee-jerk reflex, processed mainly in the spinal cord",
+      "Balancing while riding a bike"
+    ],
+    fact: "The human brain contains roughly 86 billion neurons, each capable of forming thousands of connections with other neurons, giving rise to trillions of synapses."
+  },
+  pns: {
+    tag: "Major division",
+    color: "#d8504a",
+    title: "Peripheral Nervous System (PNS)",
+    desc: "The PNS includes all the neural tissue lying outside the brain and spinal cord. It acts as the communication link between the CNS and the rest of the body, carrying sensory signals inward to the CNS and motor signals outward to muscles and glands. The PNS itself is divided into the somatic and autonomic nervous systems.",
+    functions: [
+      "Carries sensory (afferent) signals from the body to the CNS",
+      "Carries motor (efferent) signals from the CNS to muscles and organs",
+      "Connects the CNS to limbs, skin, and internal organs",
+      "Divided into the somatic system (voluntary) and autonomic system (involuntary)"
+    ],
+    examples: [
+      "Nerves running down your arm letting you feel a handshake",
+      "Signals telling your leg muscles to move when walking",
+      "Nerves regulating digestion after a meal without you noticing",
+      "Sensing temperature change on your skin"
+    ],
+    fact: "Some peripheral nerve fibres are wrapped in a fatty insulating layer called myelin, which can let signals travel at speeds of over 100 metres per second."
+  },
+  somatic: {
+    tag: "Sub-division of PNS",
+    color: "#e88a96",
+    title: "Somatic Nervous System",
+    desc: "The somatic nervous system controls voluntary movements and carries sensory information from the skin, muscles, and joints to the brain. It is the part of the nervous system you consciously control, responsible for actions like walking, talking, and writing, as well as the sensations of touch, pain, temperature, and body position.",
+    functions: [
+      "Controls voluntary skeletal muscle movement",
+      "Transmits sensory information such as touch, pressure, and pain",
+      "Relays information about limb position and movement (proprioception)",
+      "Underlies conscious, deliberate motor actions"
+    ],
+    examples: [
+      "Reaching out to pick up a cup",
+      "Feeling the texture of fabric between your fingers",
+      "Kicking a football",
+      "Typing on a keyboard"
+    ],
+    fact: "Even though it controls 'voluntary' movement, the somatic nervous system also governs simple spinal reflexes, such as quickly pulling your hand back from a hot surface, which happen faster than conscious thought."
+  },
+  autonomic: {
+    tag: "Sub-division of PNS",
+    color: "#9c2b39",
+    title: "Autonomic Nervous System (ANS)",
+    desc: "The autonomic nervous system regulates involuntary internal processes, things your body does automatically without conscious control, such as heart rate, digestion, breathing rate, and blood pressure. The ANS is split into two divisions, the sympathetic and parasympathetic, which generally have opposing effects on the same organs to keep the body in balance.",
+    functions: [
+      "Regulates heart rate and blood pressure",
+      "Controls digestion and glandular secretions",
+      "Adjusts breathing rate and pupil size",
+      "Balances 'fight or flight' and 'rest and digest' states via its two divisions"
+    ],
+    examples: [
+      "Your heart speeding up automatically when startled",
+      "Digesting food after a meal without thinking about it",
+      "Pupils dilating in dim light",
+      "Sweating when nervous or overheated"
+    ],
+    fact: "The autonomic nervous system also has a lesser-known third branch, the enteric nervous system, which operates largely independently within the gut and is sometimes called the 'second brain.'"
+  },
+  sympathetic: {
+    tag: "Sub-division of the ANS",
+    color: "#d9536a",
+    title: "Sympathetic Division",
+    desc: "The sympathetic division prepares the body for action during stress, danger, or excitement, commonly known as the 'fight or flight' response. It increases heart rate and blood pressure, dilates the pupils, slows digestion, and redirects blood flow toward the muscles, priming the body to either confront a threat or escape it.",
+    functions: [
+      "Increases heart rate and blood pressure",
+      "Dilates pupils and airways to improve alertness and oxygen intake",
+      "Diverts blood flow away from digestion and toward skeletal muscles",
+      "Triggers release of adrenaline (epinephrine) from the adrenal glands"
+    ],
+    examples: [
+      "Heart pounding before a big exam or job interview",
+      "Sudden burst of energy when narrowly avoiding an accident",
+      "Sweaty palms and a dry mouth when nervous",
+      "Heightened alertness when walking somewhere unfamiliar at night"
+    ],
+    fact: "The sympathetic response can begin in a fraction of a second, often before a person is even consciously aware of the threat that triggered it."
+  },
+  parasympathetic: {
+    tag: "Sub-division of the ANS",
+    color: "#b5283f",
+    title: "Parasympathetic Division",
+    desc: "The parasympathetic division promotes 'rest and digest' functions, calming the body down after stress and conserving energy. It slows the heart rate, stimulates digestion, and supports recovery and relaxation. It generally works in opposition to the sympathetic division to maintain balance within the body.",
+    functions: [
+      "Slows heart rate and lowers blood pressure",
+      "Stimulates digestion and nutrient absorption",
+      "Promotes relaxation, recovery, and energy conservation",
+      "Constricts pupils and supports restful states such as sleep"
+    ],
+    examples: [
+      "Feeling sleepy and relaxed after a large meal",
+      "Heart rate settling back down after exercise",
+      "Digestive 'rumbling' as the gut becomes active again",
+      "Drifting off to sleep at night"
+    ],
+    fact: "The vagus nerve is the main pathway for parasympathetic signals, connecting the brainstem to the heart, lungs, and digestive organs, and is sometimes targeted in research on mood and anxiety regulation."
+  }
+};
+
+const panel = document.getElementById('info-panel');
+const tagEl = document.getElementById('info-tag');
+const titleEl = document.getElementById('info-title');
+const descEl = document.getElementById('info-desc');
+const functionsEl = document.getElementById('info-functions');
+const examplesEl = document.getElementById('info-examples');
+const factEl = document.getElementById('info-fact');
+const closeBtn = document.getElementById('close-panel');
+const hintText = document.getElementById('hint-text');
+const allNodes = document.querySelectorAll('.node');
+
+function showInfo(key) {
+  const d = data[key];
+  if (!d) return;
+
+  tagEl.textContent = d.tag;
+  tagEl.style.background = d.color;
+  titleEl.textContent = d.title;
+  descEl.textContent = d.desc;
+
+  functionsEl.innerHTML = '';
+  d.functions.forEach(f => {
+    const li = document.createElement('li');
+    li.textContent = f;
+    functionsEl.appendChild(li);
+  });
+
+  examplesEl.innerHTML = '';
+  d.examples.forEach(ex => {
+    const li = document.createElement('li');
+    li.textContent = ex;
+    examplesEl.appendChild(li);
+  });
+
+  factEl.textContent = d.fact;
+  factEl.parentElement.style.borderLeftColor = d.color;
+
+  allNodes.forEach(n => n.classList.remove('active'));
+  const activeNode = document.getElementById('node-' + key);
+  if (activeNode) activeNode.classList.add('active');
+
+  panel.classList.add('visible');
+  hintText.style.display = 'none';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+allNodes.forEach(btn => {
+  btn.addEventListener('click', () => {
+    showInfo(btn.getAttribute('data-key'));
+  });
+});
+
+closeBtn.addEventListener('click', () => {
+  panel.classList.remove('visible');
+  allNodes.forEach(n => n.classList.remove('active'));
+  hintText.style.display = 'block';
+});
+
+function drawConnectors() {
+  const svg = document.getElementById('connector-svg');
+  const container = document.getElementById('diagram-container');
+  const containerRect = container.getBoundingClientRect();
+  svg.innerHTML = '';
+  svg.setAttribute('width', containerRect.width);
+  svg.setAttribute('height', containerRect.height);
+
+  function centerOf(id) {
+    const el = document.getElementById(id);
+    const r = el.getBoundingClientRect();
+    return {
+      top: { x: r.left + r.width / 2 - containerRect.left, y: r.top - containerRect.top },
+      bottom: { x: r.left + r.width / 2 - containerRect.left, y: r.bottom - containerRect.top }
+    };
+  }
+
+  function connect(parentId, childIds) {
+    const p = centerOf(parentId);
+    const startY = p.bottom.y;
+    const midY = startY + 18;
+
+    const trunk = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    let d = `M ${p.bottom.x} ${startY} L ${p.bottom.x} ${midY}`;
+    trunk.setAttribute('d', d);
+    trunk.setAttribute('stroke', '#4a2530');
+    trunk.setAttribute('stroke-width', '2.5');
+    trunk.setAttribute('fill', 'none');
+    svg.appendChild(trunk);
+
+    const childPoints = childIds.map(id => centerOf(id).top);
+    const minX = Math.min(...childPoints.map(c => c.x), p.bottom.x);
+    const maxX = Math.max(...childPoints.map(c => c.x), p.bottom.x);
+
+    const bar = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    bar.setAttribute('d', `M ${minX} ${midY} L ${maxX} ${midY}`);
+    bar.setAttribute('stroke', '#4a2530');
+    bar.setAttribute('stroke-width', '2.5');
+    bar.setAttribute('fill', 'none');
+    svg.appendChild(bar);
+
+    childPoints.forEach(c => {
+      const drop = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      drop.setAttribute('d', `M ${c.x} ${midY} L ${c.x} ${c.y}`);
+      drop.setAttribute('stroke', '#4a2530');
+      drop.setAttribute('stroke-width', '2.5');
+      drop.setAttribute('fill', 'none');
+      svg.appendChild(drop);
+    });
+  }
+
+  connect('node-nervous', ['node-cns', 'node-pns']);
+  connect('node-pns', ['node-somatic', 'node-autonomic']);
+  connect('node-autonomic', ['node-sympathetic', 'node-parasympathetic']);
+}
+
+window.addEventListener('load', drawConnectors);
+window.addEventListener('resize', drawConnectors);
+</script>
+
+</body>
+</html>
